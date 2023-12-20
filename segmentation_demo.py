@@ -43,7 +43,7 @@ def predict_single_frame(img, opacity=0.2):
     
     #show_img = (np.array(seg_img.convert('RGB')))*(1-opacity) + img*opacity
     
-    show_img = show_result_pyplot(model, img, result, show=False)
+    show_img = show_result_pyplot(model, img, result, show=False,with_labels=True,draw_gt=False,opacity=0.2)
     return show_img
 
 

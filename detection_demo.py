@@ -45,7 +45,7 @@ for frame_id, img in enumerate(video):
     ## 处理单帧画面
     result = inference_detector(model, img)
     temp_path = f'{temp_out_dir}/{frame_id:06d}.jpg' # 保存语义分割预测结果图像至临时文件夹
-    model.show_result(img, result, wait_time=1,out_file=temp_path)
+    model.show_result(img, result, wait_time=1,out_file=temp_path,thickness=3,bbox_color=(255,0,0))
 
     #cv2.imwrite(temp_path, show_img)
 
@@ -57,7 +57,7 @@ for frame in video:
     model.show_result(frame, result, wait_time=1,out_file=)
 """
 # 把每一帧串成视频文件
-mmcv.frames2video(temp_out_dir, 'output/DJI_0286_enhanced_detected_yolox.mp4', fps=video.fps, fourcc='mp4v')
+mmcv.frames2video(temp_out_dir, 'output/DJI_0286_enhanced_detected_yolox_new_red.mp4', fps=video.fps, fourcc='mp4v')
 
 shutil.rmtree(temp_out_dir) # 删除存放每帧画面的临时文件夹
 print('删除临时文件夹', temp_out_dir)

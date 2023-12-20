@@ -37,13 +37,13 @@ def predict_single_frame(img, opacity=0.2):
     #colored_img = colorize(result, palette=model.PALETTE)
 
     # 将分割图按调色板染色
-    seg_map = np.array(result.pred_sem_seg.data[0].detach().cpu().numpy()).astype('uint8')
-    seg_img = Image.fromarray(seg_map).convert('P')
-    seg_img.putpalette(np.array(palette, dtype=np.uint8))
+    #seg_map = np.array(result.pred_sem_seg.data[0].detach().cpu().numpy()).astype('uint8')
+    #seg_img = Image.fromarray(seg_map).convert('P')
+    #seg_img.putpalette(np.array(palette, dtype=np.uint8))
     
-    show_img = (np.array(seg_img.convert('RGB')))*(1-opacity) + img*opacity
+    #show_img = (np.array(seg_img.convert('RGB')))*(1-opacity) + img*opacity
     
-    #show_img = show_result_pyplot(model, img, result, show=False)
+    show_img = show_result_pyplot(model, img, result, show=False)
     return show_img
 
 
@@ -73,7 +73,7 @@ for frame_id, img in enumerate(imgs):
     prog_bar.update() # 更新进度条
 
 # 把每一帧串成视频文件
-mmcv.frames2video(temp_out_dir, 'output/DJI_0286_enhanced_seged_by_segformer_opa_05.mp4', fps=imgs.fps, fourcc='mp4v')
+mmcv.frames2video(temp_out_dir, 'output/DJI_0286_enhanced_seged_by_segformer_pyplot.mp4', fps=imgs.fps, fourcc='mp4v')
 
 shutil.rmtree(temp_out_dir) # 删除存放每帧画面的临时文件夹
 print('删除临时文件夹', temp_out_dir)

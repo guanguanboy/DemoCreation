@@ -1,0 +1,92 @@
+import numpy as np
+import time
+import shutil
+
+import torch
+
+from PIL import Image
+import cv2
+
+import mmcv
+import mmengine
+from mmseg.apis import init_model, inference_model,show_result_pyplot
+from mmseg.utils import register_all_modules
+register_all_modules()
+
+from mmseg.datasets import CityscapesDataset
+# 获取 Cityscapes 街景数据集 类别名和调色板
+from mmseg.datasets import cityscapes
+classes = cityscapes.CityscapesDataset.METAINFO['classes']
+palette = cityscapes.CityscapesDataset.METAINFO['palette']
+
+#palette = [[0, 0, 0], [0, 0, 0], [0, 0, 0],[0, 0, 0],[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [220, 20, 60], [255, 0, 0], [0, 0, 142], [0, 0, 70], [0, 60, 100], [0, 80, 100], [0, 0, 230], [119, 11, 32]]
+# 设置配置文件和参数文件路径
+#config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/pspnet/pspnet_r50-d8_4xb2-40k_cityscapes-512x1024.py'
+#checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/pspnet_r50-d8_512x1024_40k_cityscapes_20200605_003338-2966598c.pth'
+#config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/hrnet/fcn_hr48_4xb2-160k_cityscapes-512x1024.py'
+#checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/fcn_hr48_512x1024_160k_cityscapes_20200602_190946-59b7973e.pth'
+
+#config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/segformer/segformer_mit-b5_8xb1-160k_cityscapes-1024x1024.py'
+#checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/segformer_mit-b5_8x1_1024x1024_160k_cityscapes_20211206_072934-87a052ec.pth'
+
+#config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/mask2former/mask2former_swin-l-in22k-384x384-pre_8xb2-90k_cityscapes-512x1024.py'
+#checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/mask2former_swin-l-in22k-384x384-pre_8xb2-90k_cityscapes-512x1024_20221202_141901-28ad20f1.pth'
+config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/segformer/segformer_mit-b0_8xb1-160k_cityscapes-1024x1024.py'
+checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
+
+
+
+model = init_model(config_file, checkpoint_file, device='cuda:0')
+
+def predict_single_frame(img, opacity=0.2):
+    
+    result = inference_model(model, img)
+    
+    # 将类别标签显示在分割区域的正中央并对区域进行着色
+    #img = mmcv.imread(img)
+    #vis_img = overlay_mask(img, result, model.CLASSES)
+    #colored_img = colorize(result, palette=model.PALETTE)
+
+    # 将分割图按调色板染色
+    seg_map = np.array(result.pred_sem_seg.data[0].detach().cpu().numpy()).astype('uint8')
+    seg_map[seg_map <= 10] = 100
+
+    seg_img = Image.fromarray(seg_map).convert('P')
+    seg_img.putpalette(np.array(palette, dtype=np.uint8))
+    
+    show_img = (np.array(seg_img.convert('RGB')))*(1-opacity) + img*opacity
+    
+    #show_img = show_result_pyplot(model, img, result, show=False,draw_gt=False,opacity=0.85)
+    return show_img
+
+
+# input_video = 'data/traffic.mp4'
+
+input_video = 'input/DJI_0286.MP4'
+
+temp_out_dir = './tmp_results/'
+import os
+if not os.path.exists(temp_out_dir):
+
+    os.mkdir(temp_out_dir)
+
+# 读入待预测视频
+imgs = mmcv.VideoReader(input_video)
+
+prog_bar = mmengine.ProgressBar(len(imgs))
+
+# 对视频逐帧处理
+for frame_id, img in enumerate(imgs):
+    
+    ## 处理单帧画面
+    show_img = predict_single_frame(img, opacity=0.5)
+    temp_path = f'{temp_out_dir}/{frame_id:06d}.jpg' # 保存语义分割预测结果图像至临时文件夹
+    cv2.imwrite(temp_path, show_img)
+
+    prog_bar.update() # 更新进度条
+
+# 把每一帧串成视频文件
+mmcv.frames2video(temp_out_dir, 'output/DJI_0286_seged_by_mobilenetv3.mp4', fps=imgs.fps, fourcc='mp4v')
+
+shutil.rmtree(temp_out_dir) # 删除存放每帧画面的临时文件夹
+print('删除临时文件夹', temp_out_dir)

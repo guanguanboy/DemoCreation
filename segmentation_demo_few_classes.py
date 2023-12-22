@@ -31,10 +31,14 @@ palette = cityscapes.CityscapesDataset.METAINFO['palette']
 
 #config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/mask2former/mask2former_swin-l-in22k-384x384-pre_8xb2-90k_cityscapes-512x1024.py'
 #checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/mask2former_swin-l-in22k-384x384-pre_8xb2-90k_cityscapes-512x1024_20221202_141901-28ad20f1.pth'
-config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/segformer/segformer_mit-b0_8xb1-160k_cityscapes-1024x1024.py'
-checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
+#config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/segformer/segformer_mit-b3_8xb1-160k_cityscapes-1024x1024.py'
+#checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/segformer_mit-b3_8x1_1024x1024_160k_cityscapes_20211206_224823-a8f8a177.pth'
 
+#config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/segformer/segformer_mit-b1_8xb1-160k_cityscapes-1024x1024.py'
+#checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/segformer_mit-b1_8x1_1024x1024_160k_cityscapes_20211208_064213-655c7b3f.pth'
 
+config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/segformer/segformer_mit-b2_8xb1-160k_cityscapes-1024x1024.py'
+checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/segformer_mit-b2_8x1_1024x1024_160k_cityscapes_20211207_134205-6096669a.pth'
 
 model = init_model(config_file, checkpoint_file, device='cuda:0')
 
@@ -86,7 +90,7 @@ for frame_id, img in enumerate(imgs):
     prog_bar.update() # 更新进度条
 
 # 把每一帧串成视频文件
-mmcv.frames2video(temp_out_dir, 'output/DJI_0286_seged_by_mobilenetv3.mp4', fps=imgs.fps, fourcc='mp4v')
+mmcv.frames2video(temp_out_dir, 'output/DJI_0286_seged_by_segformer_B2.mp4', fps=imgs.fps, fourcc='mp4v')
 
 shutil.rmtree(temp_out_dir) # 删除存放每帧画面的临时文件夹
 print('删除临时文件夹', temp_out_dir)

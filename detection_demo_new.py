@@ -1,7 +1,7 @@
 from mmdet.apis import init_detector, inference_detector,DetInferencer
 import mmcv
 import mmengine
-
+import pickle
 
 from PIL import Image
 import cv2
@@ -33,11 +33,15 @@ if not os.path.exists(temp_out_dir):
     os.mkdir(temp_out_dir)
 
 # 测试视频并展示结果
+#video = mmcv.VideoReader('input/DJI_0286.MP4')
 video = mmcv.VideoReader('input/DJI_0286_enhanced.mp4')
 # 读入待预测视频
 #imgs = mmcv.VideoReader(input_video)
 
 prog_bar = mmengine.ProgressBar(len(video))
+
+detected_person_list = []
+detected_car_list = []
 
 # 对视频逐帧处理
 for frame_id, img in enumerate(video):
@@ -52,6 +56,17 @@ for frame_id, img in enumerate(video):
 
     prog_bar.update() # 更新进度条
 
+    pred_labels_list = result['predictions'][0]['labels']
+    #print(pred_labels_list)
+
+    #统计人的个数
+    detected_person_count = pred_labels_list.count(1)
+    detected_person_list.append(detected_person_count)
+    #统计车的个数
+    detected_car_count = pred_labels_list.count(3) + pred_labels_list.count(6)
+    detected_car_list.append(detected_car_count)
+
+
 """
 for frame in video:
     result = inference_detector(model, frame)
@@ -59,7 +74,20 @@ for frame in video:
 """
 # 把每一帧串成视频文件
 temp_image_save_dir = temp_out_dir + 'vis/'
-mmcv.frames2video(temp_image_save_dir, 'output/DJI_0286_enhanced_detected_dino.mp4', fps=video.fps, fourcc='mp4v',filename_tmpl='{:08d}.jpg')
+#mmcv.frames2video(temp_image_save_dir, 'output/DJI_0286_enhanced_detected_dino.mp4', fps=video.fps, fourcc='mp4v',filename_tmpl='{:08d}.jpg')
+#mmcv.frames2video(temp_image_save_dir, 'output/DJI_0286_detected_yolov3.mp4', fps=video.fps, fourcc='mp4v',filename_tmpl='{:08d}.jpg')
 
 shutil.rmtree(temp_image_save_dir) # 删除存放每帧画面的临时文件夹
 print('删除临时文件夹', temp_image_save_dir)
+
+#detected_person_list_path = 'output/DJI_0286_detected_person_list_yolov3.pkl'
+detected_person_list_path = 'output/DJI_0286_enhanced_detected_person_list_dino.pkl'
+
+with open(detected_person_list_path, 'wb') as file:
+    pickle.dump(detected_person_list, file)
+
+#detected_car_list_path = 'output/DJI_0286_detected_car_list_yolov3.pkl'
+detected_car_list_path = 'output/DJI_0286_enhanced_detected_car_list_dino.pkl'
+
+with open(detected_car_list_path, 'wb') as file:
+    pickle.dump(detected_car_list, file)

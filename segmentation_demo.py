@@ -22,8 +22,11 @@ palette = cityscapes.CityscapesDataset.METAINFO['palette']
 # 设置配置文件和参数文件路径
 #config_file = '/data/liguanlin/codes/mmsegmentation/configs/pspnet/pspnet_r50-d8_4xb2-40k_cityscapes-512x1024.py'
 #checkpoint_file = '/data/liguanlin/codes/mmsegmentation/checkpoints/pspnet_r50-d8_512x1024_40k_cityscapes_20200605_003338-2966598c.pth'
-config_file = '/data/liguanlin/codes/mmsegmentation/configs/segformer/segformer_mit-b5_8xb1-160k_cityscapes-1024x1024.py'
-checkpoint_file = '/data/liguanlin/codes/mmsegmentation/checkpoints/segformer_mit-b5_8x1_1024x1024_160k_cityscapes_20211206_072934-87a052ec.pth'
+#config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/segformer/segformer_mit-b5_8xb1-160k_cityscapes-1024x1024.py'
+#checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/segformer_mit-b5_8x1_1024x1024_160k_cityscapes_20211206_072934-87a052ec.pth'
+
+config_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/configs/mask2former/mask2former_swin-l-in22k-384x384-pre_8xb2-90k_cityscapes-512x1024.py'
+checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmsegmentation/checkpoints/mask2former_swin-l-in22k-384x384-pre_8xb2-90k_cityscapes-512x1024_20221202_141901-28ad20f1.pth'
 
 model = init_model(config_file, checkpoint_file, device='cuda:0')
 
@@ -43,7 +46,7 @@ def predict_single_frame(img, opacity=0.2):
     
     #show_img = (np.array(seg_img.convert('RGB')))*(1-opacity) + img*opacity
     
-    show_img = show_result_pyplot(model, img, result, show=False,with_labels=True,draw_gt=False,opacity=0.2)
+    show_img = show_result_pyplot(model, img, result, show=False,draw_gt=False,opacity=0.85)
     return show_img
 
 
@@ -51,7 +54,7 @@ def predict_single_frame(img, opacity=0.2):
 
 input_video = 'input/DJI_0286_enhanced.mp4'
 
-temp_out_dir = '/data/liguanlin/codes/mmseg_inference/tmp_results/'
+temp_out_dir = './tmp_results/'
 import os
 if not os.path.exists(temp_out_dir):
 
@@ -73,7 +76,7 @@ for frame_id, img in enumerate(imgs):
     prog_bar.update() # 更新进度条
 
 # 把每一帧串成视频文件
-mmcv.frames2video(temp_out_dir, 'output/DJI_0286_enhanced_seged_by_segformer_pyplot.mp4', fps=imgs.fps, fourcc='mp4v')
+mmcv.frames2video(temp_out_dir, 'output/DJI_0286_enhanced_seged_by_mask2former_pyplot.mp4', fps=imgs.fps, fourcc='mp4v')
 
 shutil.rmtree(temp_out_dir) # 删除存放每帧画面的临时文件夹
 print('删除临时文件夹', temp_out_dir)

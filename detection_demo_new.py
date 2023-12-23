@@ -10,10 +10,10 @@ import shutil
 # 指定模型的配置文件和 checkpoint 文件路径
 #config_file = '/data/liguanlin/codes/mmdetection/configs/yolox/yolox_x_8x8_300e_coco.py'
 #checkpoint_file = '/data/liguanlin/codes/mmdetection/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth'
-#config_file = '/data1/liguanlin/codes/codes_from_github/mmdetection/configs/yolo/yolov3_mobilenetv2_8xb24-320-300e_coco.py'
-#checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmdetection/checkpoints/yolov3_mobilenetv2_320_300e_coco_20210719_215349-d18dff72.pth'
-config_file = '/data1/liguanlin/codes/codes_from_github/mmdetection/configs/dino/dino-5scale_swin-l_8xb2-36e_coco.py'
-checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmdetection/checkpoints/dino-5scale_swin-l_8xb2-36e_coco-5486e051.pth'
+config_file = '/data1/liguanlin/codes/codes_from_github/mmdetection/configs/yolo/yolov3_mobilenetv2_8xb24-320-300e_coco.py'
+checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmdetection/checkpoints/yolov3_mobilenetv2_320_300e_coco_20210719_215349-d18dff72.pth'
+#config_file = '/data1/liguanlin/codes/codes_from_github/mmdetection/configs/dino/dino-5scale_swin-l_8xb2-36e_coco.py'
+#checkpoint_file = '/data1/liguanlin/codes/codes_from_github/mmdetection/checkpoints/dino-5scale_swin-l_8xb2-36e_coco-5486e051.pth'
 
 # 根据配置文件和 checkpoint 文件构建模型
 model = DetInferencer(config_file, checkpoint_file, device='cuda:0')
@@ -33,8 +33,8 @@ if not os.path.exists(temp_out_dir):
     os.mkdir(temp_out_dir)
 
 # 测试视频并展示结果
-#video = mmcv.VideoReader('input/DJI_0286.MP4')
-video = mmcv.VideoReader('input/DJI_0286_enhanced.mp4')
+video = mmcv.VideoReader('input/DJI_0286.MP4')
+#video = mmcv.VideoReader('input/DJI_0286_enhanced.mp4')
 # 读入待预测视频
 #imgs = mmcv.VideoReader(input_video)
 
@@ -59,11 +59,19 @@ for frame_id, img in enumerate(video):
     pred_labels_list = result['predictions'][0]['labels']
     #print(pred_labels_list)
 
+    pred_score_list = result['predictions'][0]['scores']
+    filtered_label_list = []
+    pred_score_thr = 0.3
+
+    for i in range(len(pred_labels_list)):
+        if pred_score_list[i] >= pred_score_thr:
+            filtered_label_list.append(pred_labels_list[i])
+
     #统计人的个数
-    detected_person_count = pred_labels_list.count(1)
+    detected_person_count = filtered_label_list.count(0)
     detected_person_list.append(detected_person_count)
     #统计车的个数
-    detected_car_count = pred_labels_list.count(3) + pred_labels_list.count(6)
+    detected_car_count = filtered_label_list.count(2)
     detected_car_list.append(detected_car_count)
 
 
@@ -80,14 +88,14 @@ temp_image_save_dir = temp_out_dir + 'vis/'
 shutil.rmtree(temp_image_save_dir) # 删除存放每帧画面的临时文件夹
 print('删除临时文件夹', temp_image_save_dir)
 
-#detected_person_list_path = 'output/DJI_0286_detected_person_list_yolov3.pkl'
-detected_person_list_path = 'output/DJI_0286_enhanced_detected_person_list_dino.pkl'
+detected_person_list_path = 'output/DJI_0286_detected_person_list_yolov3.pkl'
+#detected_person_list_path = 'output/DJI_0286_enhanced_detected_person_list_dino.pkl'
 
 with open(detected_person_list_path, 'wb') as file:
     pickle.dump(detected_person_list, file)
 
-#detected_car_list_path = 'output/DJI_0286_detected_car_list_yolov3.pkl'
-detected_car_list_path = 'output/DJI_0286_enhanced_detected_car_list_dino.pkl'
+detected_car_list_path = 'output/DJI_0286_detected_car_list_yolov3.pkl'
+#detected_car_list_path = 'output/DJI_0286_enhanced_detected_car_list_dino.pkl'
 
 with open(detected_car_list_path, 'wb') as file:
     pickle.dump(detected_car_list, file)
